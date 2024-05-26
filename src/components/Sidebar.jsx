@@ -5,17 +5,17 @@ import Textarea from "@mui/joy/Textarea";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 
-const Sidebar = ({ selectedNode, handleLabel }) => {
-
+const Sidebar = ({ selectedNode, handleLabel, setSelectedNode }) => {
 
 
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
+
   const handleChange = (e) => {
-  const label=e.target.value;
-  handleLabel(selectedNode.id,label);
+    const label = e.target.value;
+    handleLabel(selectedNode.id, label);
   };
   return (
     <div
@@ -25,6 +25,8 @@ const Sidebar = ({ selectedNode, handleLabel }) => {
         borderLeft: "1px solid #d2caca",
       }}
     >
+     
+
       {selectedNode ? (
         <div>
           <div

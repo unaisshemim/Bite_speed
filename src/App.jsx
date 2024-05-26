@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -14,6 +14,7 @@ import Sidebar from "./components/Sidebar.jsx";
 
 import "./index.css";
 import WhatsAppNode from "./components/WhatsAppNode.jsx";
+import { Alert, Snackbar } from "@mui/material";
 
 const initialNodes = [];
 const nodeTypes = {
@@ -32,6 +33,12 @@ const App = () => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null); // State to store the selected node
 
+  const [state, setState] = useState({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+  });
+  const { vertical, horizontal, open } = state;
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     []
@@ -64,10 +71,14 @@ const App = () => {
         id: getId(),
         type: "selectorNode", // Ensure the node type is WhatsAppNode
         position,
-        data: { label: `test message ${id}` },
+        data: { value: `test message ${id}` },
       };
 
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((nds) => {
+        const updatedNodes = nds.concat(newNode);
+        setSelectedNode(newNode); // Set the new node as the selected node
+        return updatedNodes;
+      });
     },
     [reactFlowInstance]
   );
@@ -92,23 +103,34 @@ const App = () => {
     setSelectedNode(element);
   }, []);
   const handleUpdateLabel = (id, newLabel) => {
-    // Update logic using setNodes here
+    setNodes((prevNodes) => {
+      const updatedNodes = [...prevNodes];
+      const targetIndex = updatedNodes.findIndex((node) => node.id === id);
 
-    const updatedNodes = [...nodes];
-    console.log(id);
-    const targetIndex = updatedNodes.findIndex((node) => {
-      console.log(node);
-      return node.id === id;
+      if (targetIndex !== -1) {
+        updatedNodes[targetIndex] = {
+          ...updatedNodes[targetIndex],
+          data: { label: newLabel },
+        };
+      }
+
+      return updatedNodes;
     });
-
-    if (targetIndex !== -1) {
-      updatedNodes[targetIndex] = {
-        ...updatedNodes[targetIndex],
-        data: { ...updatedNodes[targetIndex].data, label: newLabel },
-      };
-    }
-    setNodes(updatedNodes);
   };
+
+  const handleClick = (newState) => () => {
+   
+    setState({ ...newState, open: true });
+  };
+
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+
+  // const hasNodeWithoutEdges = nodes.some(
+  //   (node) =>
+  //     !edges.some((edge) => edge.source === node.id || edge.target === node.id)
+  // );
 
   return (
     <div>
@@ -135,6 +157,8 @@ const App = () => {
             marginRight: "100px",
             cursor: "pointer",
           }}
+          onClick={() => handleClick({ vertical: "top", horizontal: "center" })}
+
         >
           Save Changes
         </div>
@@ -164,8 +188,27 @@ const App = () => {
             </ReactFlow>
           </div>
         </ReactFlowProvider>
-        <Sidebar selectedNode={selectedNode} handleLabel={handleUpdateLabel} />
+        <Sidebar
+          selectedNode={selectedNode}
+          handleLabel={handleUpdateLabel}
+          setSelectedNode={setSelectedNode}
+        />
       </div>
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical, horizontal }}
+      >
+        <Alert
+          onClose={handleClose}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%", color: "black", background: "#ea8b8b" }}
+        >
+          Cannot Save Flow
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
