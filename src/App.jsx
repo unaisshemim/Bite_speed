@@ -32,6 +32,7 @@ const App = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null); // State to store the selected node
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const [state, setState] = useState({
     open: false,
@@ -39,6 +40,16 @@ const App = () => {
     horizontal: "center",
   });
   const { vertical, horizontal, open } = state;
+
+  const checkIsolatedNodes = () => {
+    for (const node of elements.filter((el) => el.type === 'selectorNode')) {
+      if (!elements.some((el) => el.source === node.id || el.target === node.id)) {
+        setSnackbarOpen(true);
+        return;
+      }
+    }
+    setSnackbarOpen(false);
+  };
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     []
@@ -157,7 +168,7 @@ const App = () => {
             marginRight: "100px",
             cursor: "pointer",
           }}
-          onClick={() => handleClick({ vertical: "top", horizontal: "center" })}
+          onClick={() =>snackbarOpen && handleClick({ vertical: "top", horizontal: "center" })}
 
         >
           Save Changes
