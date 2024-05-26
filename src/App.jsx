@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -32,7 +32,8 @@ const App = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null); // State to store the selected node
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  
+  
 
   const [state, setState] = useState({
     open: false,
@@ -41,15 +42,7 @@ const App = () => {
   });
   const { vertical, horizontal, open } = state;
 
-  const checkIsolatedNodes = () => {
-    for (const node of elements.filter((el) => el.type === 'selectorNode')) {
-      if (!elements.some((el) => el.source === node.id || el.target === node.id)) {
-        setSnackbarOpen(true);
-        return;
-      }
-    }
-    setSnackbarOpen(false);
-  };
+
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     []
@@ -131,18 +124,30 @@ const App = () => {
 
   const handleClick = (newState) => () => {
    
+
     setState({ ...newState, open: true });
   };
 
   const handleClose = () => {
     setState({ ...state, open: false });
   };
+  const edgeCheck=()=>{
+    const hasMultipleNodes = nodes.length > 1;
+    const hasNodeWithoutTarget = nodes.some((node) => {
+      const isNodeWithoutTarget = !edges.some(
+        (edge) => edge.source === node.id && !edge.target
+      );
+      return isNodeWithoutTarget;
+    });
+  
+    if (hasMultipleNodes && hasNodeWithoutTarget) {
+    return false
+    } else {
+    return true
+    }
+  }
 
-  // const hasNodeWithoutEdges = nodes.some(
-  //   (node) =>
-  //     !edges.some((edge) => edge.source === node.id || edge.target === node.id)
-  // );
-
+  console.log(edges)
   return (
     <div>
       <div
@@ -168,9 +173,9 @@ const App = () => {
             marginRight: "100px",
             cursor: "pointer",
           }}
-          onClick={() =>snackbarOpen && handleClick({ vertical: "top", horizontal: "center" })}
-
+          onClick={edgeCheck&& handleClick({ vertical: 'top', horizontal: 'center' })}
         >
+         
           Save Changes
         </div>
       </div>
