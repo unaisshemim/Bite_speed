@@ -14,20 +14,14 @@ import Sidebar from "./components/Sidebar.jsx";
 
 import "./index.css";
 import WhatsAppNode from "./components/WhatsAppNode.jsx";
-const initialNodes = [
-  {
-    id: "1",
-    type: "selectorNode",
-    data: { label: "input node" },
-    position: { x: 250, y: 5 },
-  },
-];
+
+const initialNodes = [];
 const nodeTypes = {
   selectorNode: WhatsAppNode,
 };
 
 let id = 0;
-const getId = () => `dndnode_${id++}`;
+const getId = () => `${id++}`;
 
 const App = () => {
   const edgeUpdateSuccessful = useRef(true);
@@ -36,6 +30,7 @@ const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null); // State to store the selected node
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -67,9 +62,9 @@ const App = () => {
       });
       const newNode = {
         id: getId(),
-        type,
+        type: "selectorNode", // Ensure the node type is WhatsAppNode
         position,
-        data: { label: `${type} node` },
+        data: { label: `test message ${id}` },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -93,6 +88,27 @@ const App = () => {
 
     edgeUpdateSuccessful.current = true;
   }, []);
+  const onNodeClick = useCallback((event, element) => {
+    setSelectedNode(element);
+  }, []);
+  const handleUpdateLabel = (id, newLabel) => {
+    // Update logic using setNodes here
+
+    const updatedNodes = [...nodes];
+    console.log(id);
+    const targetIndex = updatedNodes.findIndex((node) => {
+      console.log(node);
+      return node.id === id;
+    });
+
+    if (targetIndex !== -1) {
+      updatedNodes[targetIndex] = {
+        ...updatedNodes[targetIndex],
+        data: { ...updatedNodes[targetIndex].data, label: newLabel },
+      };
+    }
+    setNodes(updatedNodes);
+  };
 
   return (
     <div>
@@ -112,9 +128,7 @@ const App = () => {
             fontSize: "13px",
             fontWeight: "bold",
             fontFamily: "sans-serif",
-
             padding: "10px",
-
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -141,14 +155,16 @@ const App = () => {
               onEdgeUpdateStart={onEdgeUpdateStart}
               onEdgeUpdateEnd={onEdgeUpdateEnd}
               nodeTypes={nodeTypes}
-              fitView
+              defaultViewport={{ x: 250, y: 250, zoom: 0.75 }}
+              onNodeClick={onNodeClick}
+              // onClick={()=>{setSelectedNode(null)}}
             >
-              <Controls style={{marginBottom:"100px"}}/>
+              <Controls style={{ marginBottom: "60px" }} />
               <Background />
             </ReactFlow>
           </div>
         </ReactFlowProvider>
-        <Sidebar />
+        <Sidebar selectedNode={selectedNode} handleLabel={handleUpdateLabel} />
       </div>
     </div>
   );
