@@ -131,23 +131,10 @@ const App = () => {
   const handleClose = () => {
     setState({ ...state, open: false });
   };
-  const edgeCheck=()=>{
-    const hasMultipleNodes = nodes.length > 1;
-    const hasNodeWithoutTarget = nodes.some((node) => {
-      const isNodeWithoutTarget = !edges.some(
-        (edge) => edge.source === node.id && !edge.target
-      );
-      return isNodeWithoutTarget;
-    });
-  
-    if (hasMultipleNodes && hasNodeWithoutTarget) {
-    return false
-    } else {
-    return true
-    }
-  }
+  const edgeCheck = nodes.every(node => edges.some(edge => edge.source === node.id || edge.target === node.id));
 
   console.log(edges)
+  console.log(nodes)
   return (
     <div>
       <div
@@ -173,7 +160,13 @@ const App = () => {
             marginRight: "100px",
             cursor: "pointer",
           }}
-          onClick={edgeCheck&& handleClick({ vertical: 'top', horizontal: 'center' })}
+          onClick={()=>{
+            if(!edgeCheck){
+              handleClick({ vertical: "top", horizontal: "center" })()
+            }else{
+              console.log("Flow Saved")
+            }
+          }}
         >
          
           Save Changes
